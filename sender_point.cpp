@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
         if (command.name == "bench")
         {
             std::string currentTime = getCurrentTimestamp();
-            std::ofstream benchOutput("csv/" + currentTime + "_sender_bench_output.csv", std::ios::app);
+            std::ofstream benchOutput("./csv/" + currentTime + "_sender_bench_output.csv", std::ios::app);
 
             std::string bandwidth;
             if (hasFlag(command.args, "-b", bandwidth))
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
         else if (command.name == "send")
         {
             std::string currentTime = getCurrentTimestamp();
-            std::ofstream sendOutput("csv/" + currentTime + "_sender_send_output.csv", std::ios::app);
+            std::ofstream sendOutput("./csv/" + currentTime + "_sender_send_output.csv", std::ios::app);
 
             std::string filename;
             if (hasFlag(command.args, "-f", filename))
