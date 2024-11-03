@@ -19,12 +19,16 @@ endif()
 
 set(SENDER_SOURCE sender_point.cpp auxiliary.hpp command.hpp)
 
-set(RECIEVER_SOURCE reciever_point.cpp auxiliary.hpp)
+set(RECEIVER_SOURCE receiver_point.cpp auxiliary.hpp)
 
-add_executable(reciever ${RECIEVER_SOURCE})
-target_include_directories(reciever PUBLIC rscoder)
-target_link_libraries(reciever readline)
+add_executable(receiver ${RECEIVER_SOURCE})
+add_custom_command(TARGET receiver POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ../csv ../files)
+target_include_directories(receiver PUBLIC rscoder)
+target_link_libraries(receiver readline)
 
 add_executable(sender ${SENDER_SOURCE})
+add_custom_command(TARGET sender POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ../csv ../files)
 target_include_directories(sender PUBLIC rscoder)
 target_link_libraries(sender readline)
