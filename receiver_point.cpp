@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    /// This method gets only local addresses, so i've had to use workaround lower
+    /*
     char hostname[1024]; ///< This machine hostname (either global DNS, or local name)
     gethostname(hostname, sizeof(hostname));
     struct hostent *he = gethostbyname(hostname); ///< Get all ip associated with hostname
@@ -53,7 +55,16 @@ int main(int argc, char *argv[])
         perror("gethostbyname");
         exit(EXIT_FAILURE);
     }
-    std::cout << "Server IP: " << inet_ntoa(*(struct in_addr *)he->h_addr_list[0]) << std::endl;
+    */
+
+    FILE *commandFile; ///< Our bash command
+    commandFile = popen("hostname -I | awk '{print $1}'", "r");
+
+    char publicIP[100];
+    fgets(publicIP, sizeof(publicIP), commandFile); ///< Getting this machine public ip by executing bash command
+    pclose(commandFile);
+
+    std::cout << "Server IP: " << publicIP << std::endl;
 
     char buffer[MAXLINE] = {0};
 
