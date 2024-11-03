@@ -93,9 +93,9 @@ int main(int argc, char *argv[])
             }
             else
             {
-                clientFileName = new char[numberOfBytesReceived + 8];
+                clientFileName = new char[numberOfBytesReceived + 6];
                 memset(&clientFileName[0], 0, strlen(clientFileName));
-                strcat(clientFileName, "../files/");
+                strcat(clientFileName, "files/");
                 strcat(clientFileName, buffer + 2);
                 fileFromClient.open(clientFileName);
             }
@@ -114,13 +114,13 @@ int main(int argc, char *argv[])
                 if (pos == 0)
                 {
                     currentTime = getCurrentTimestamp();
-                    outputFile.open("../csv/" + currentTime + "_receiver_send_output.csv", std::ios::app);
+                    outputFile.open("csv/" + currentTime + "_receiver_send_output.csv", std::ios::app);
                 }
             }
             else
             {
                 currentTime = getCurrentTimestamp();
-                outputFile.open("../csv/" + currentTime + "_receiver_send_output.csv", std::ios::app);
+                outputFile.open("csv/" + currentTime + "_receiver_send_output.csv", std::ios::app);
             }
 
             char16_t currentPacketIndex;
@@ -255,13 +255,13 @@ int main(int argc, char *argv[])
                 if (pos == 0)
                 {
                     currentTime = getCurrentTimestamp();
-                    benchFile.open("../csv/" + currentTime + "_receiver_bench_output.csv", std::ios::app);
+                    benchFile.open("csv/" + currentTime + "_receiver_bench_output.csv", std::ios::app);
                 }
             }
             else
             {
                 currentTime = getCurrentTimestamp();
-                benchFile.open("../csv/" + currentTime + "_receiver_bench_output.csv", std::ios::app);
+                benchFile.open("csv/" + currentTime + "_receiver_bench_output.csv", std::ios::app);
             }
 
             char16_t currentPacketIndex;
