@@ -23,12 +23,12 @@ set(RECEIVER_SOURCE receiver_point.cpp auxiliary.hpp)
 
 add_executable(receiver ${RECEIVER_SOURCE})
 add_custom_command(TARGET receiver POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory /csv /files)
+        COMMAND ${CMAKE_COMMAND} -E make_directory csv files)
 target_include_directories(receiver PUBLIC rscoder)
 target_link_libraries(receiver readline)
 
 add_executable(sender ${SENDER_SOURCE})
 add_custom_command(TARGET sender POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory /csv /files)
+        COMMAND ${CMAKE_COMMAND} -E make_directory csv files)
 target_include_directories(sender PUBLIC rscoder)
 target_link_libraries(sender readline)
