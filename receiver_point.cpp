@@ -13,6 +13,7 @@
 #include "rscoder/rs.hpp"
 
 #include "auxiliary.hpp"
+#undef FILE
 
 int main(int argc, char *argv[])
 {
