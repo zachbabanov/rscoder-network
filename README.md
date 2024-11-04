@@ -116,8 +116,7 @@ and `TIMESTAMP_sender_send_output.csv`. All files have next header structure:
 
 ## Known issues
 
-|  #  |                  Issue               |          Solved          |
-|-----|--------------------------------------|--------------------------|
-|  1  | Transmitting only text handled files | <ul><li>- [ ] </li></ul> |
-|  2  |    Bad decoding with bandwidth > 1   | <ul><li>- [ ] </li></ul> |
-
+|  #  |                      Issue                   |          Solved          |
+|-----|----------------------------------------------|--------------------------|
+|  1  |     Transmitting only text handled files     | <ul><li>- [ ] </li></ul> |
+|  2  |    Overflowing decoding with bandwidth > 1   | <ul><li>- [ ] </li></ul> |
