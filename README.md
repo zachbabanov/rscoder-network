@@ -114,3 +114,10 @@ and `TIMESTAMP_sender_send_output.csv`. All files have next header structure:
 | File number `for send` |  Packet Number  |  Bandwidth  |  Timestamp  |  Number of errors  |
 |------------------------|-----------------|-------------|-------------|--------------------|
 
+## Known issues
+
+|  #  |                  Issue               |          Solved          |
+|-----|--------------------------------------|--------------------------|
+|  1  | Transmitting only text handled files | <ul><li>- [ ] </li></ul> |
+|  2  |    Bad decoding with bandwidth > 1   | <ul><li>- [ ] </li></ul> |
+
