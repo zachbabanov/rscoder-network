@@ -54,7 +54,7 @@ or
 sudo make sender
 ```
 
-Both command will also create two directories within current, names `./csv` and `./files`. First is used for<br>
+Both command will also create two directories within current, named `./csv` and `./files`. First is used for<br>
 storing statistic files, second for transmitted files received by point
 
 ## Usage
