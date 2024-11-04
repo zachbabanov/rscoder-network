@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
             std::cout << "Received benchmarking packet from " << ntohs(cliaddr.sin_port) << std::endl;
 
             int numberOfErrors = 0;
-            for (int currentByte = 3; currentByte < numberOfBytesReceived; currentByte++)
+            for (int currentByte = 4; currentByte < numberOfBytesReceived; currentByte++)
             {
                 if (buffer[currentByte] != 1)
                     numberOfErrors++;
