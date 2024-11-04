@@ -13,7 +13,7 @@ For build and compile program you will need CMake, libc and gcc.<br>
 Check if they are installed on your system or get them by `apt-get install`:
 
 ```shell script
-sudo apt-get install cmake cmake libc gcc
+sudo apt-get install cmake libc gcc
 ```
 
 Readline library is necessary for Receiver Point
