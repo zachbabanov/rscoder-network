@@ -106,7 +106,7 @@ char* composePacket(char* packet, const char &msgType, const char &fileIndex, co
 char* composePacket(char* packet, const char &msgType, const char16_t &packetIndex, const int &bandwidth)
 {
     packet = new char[255 * bandwidth + 4];
-    memset(&packet[0], 1, 255 * bandwidth + 2);
+    memset(&packet[0], 1, 255 * bandwidth + 4);
 
     char packetIndexLow = static_cast<char>(packetIndex);
     char packetIndexHigh = static_cast<char>(packetIndex >> 8);
