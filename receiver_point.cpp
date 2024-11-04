@@ -166,6 +166,8 @@ int main(int argc, char *argv[])
                         if (fileFromClient.is_open())
                             fileFromClient.write(decodedMSG, 128);
 
+                        fileFromClient.close();
+
                         memset(&decodedMSG[0], 0, 128);
                     }
 
@@ -185,6 +187,8 @@ int main(int argc, char *argv[])
 
                     if (fileFromClient.is_open())
                         fileFromClient.write(decodedMSG, 128);
+
+                    fileFromClient.close();
 
                     std::string timestamp = getCurrentTimestamp();
                     outputFile << (int)currentPacketIndex << "," << 1 << "," << timestamp << "," << numberOfErrors << std::endl;
@@ -212,6 +216,8 @@ int main(int argc, char *argv[])
                         if (fileFromClient.is_open())
                             fileFromClient.write(decodedMSG, 128);
 
+                        fileFromClient.close();
+
                         memset(&decodedMSG[0], 0, 128);
                     }
 
@@ -231,6 +237,8 @@ int main(int argc, char *argv[])
 
                     if (fileFromClient.is_open())
                         fileFromClient.write(decodedMSG, 128);
+                    
+                    fileFromClient.close();
 
                     std::string timestamp = getCurrentTimestamp();
                     outputFile << (int)currentPacketIndex << "," << 1 << "," << timestamp << "," << numberOfErrors << std::endl;
