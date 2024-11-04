@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
                 currentPacketIndex = static_cast<char16_t>(((unsigned char)buffer[2]) << 8 | (unsigned char)buffer[3]);
 
             std::string timestamp = getCurrentTimestamp();
-            benchFile << (int)currentPacketIndex << "," << (int)(unsigned char)buffer[1] << "," << timestamp << numberOfErrors << std::endl;
+            benchFile << (int)currentPacketIndex << "," << (int)(unsigned char)buffer[1] << "," << timestamp << "," << numberOfErrors << std::endl;
         }
         else
         {
