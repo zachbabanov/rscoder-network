@@ -59,7 +59,7 @@ storing statistic files, second for transmitted files received by point
 
 ## Usage
 
-Receiver Point always must be started first. If you are running root user do not forget `sudo` with executable<br>
+Receiver Point always must be started first. If you are running root user do not forget `sudo` with executable.<br>
 Receiver Point executable need to be started with provided `PORT_NUMBER`
 
 ```shell script
