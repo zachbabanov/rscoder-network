@@ -164,9 +164,12 @@ int main(int argc, char *argv[])
                         fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
                         if (fileFromClient.is_open())
+                        {
+                            fileFromClient.seekp(0);
+                            fileFromClient.seekp((currentMSG + (int)currentPacketIndex - 1) * 128);
                             fileFromClient.write(decodedMSG, 128);
-
-                        fileFromClient.close();
+                            fileFromClient.close();
+                        }
 
                         memset(&decodedMSG[0], 0, 128);
                     }
@@ -186,9 +189,12 @@ int main(int argc, char *argv[])
                     fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
                     if (fileFromClient.is_open())
+                    {
+                        fileFromClient.seekp(0);
+                        fileFromClient.seekp(((int)currentPacketIndex - 1) * 128);
                         fileFromClient.write(decodedMSG, 128);
-
-                    fileFromClient.close();
+                        fileFromClient.close();
+                    }
 
                     std::string timestamp = getCurrentTimestamp();
                     outputFile << (int)currentPacketIndex << "," << 1 << "," << timestamp << "," << numberOfErrors << std::endl;
@@ -214,9 +220,12 @@ int main(int argc, char *argv[])
                         fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
                         if (fileFromClient.is_open())
+                        {
+                            fileFromClient.seekp(0);
+                            fileFromClient.seekp((currentMSG + (int)currentPacketIndex - 1) * 128);
                             fileFromClient.write(decodedMSG, 128);
-
-                        fileFromClient.close();
+                            fileFromClient.close();
+                        }
 
                         memset(&decodedMSG[0], 0, 128);
                     }
@@ -236,9 +245,12 @@ int main(int argc, char *argv[])
                     fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
                     if (fileFromClient.is_open())
+                    {
+                        fileFromClient.seekp(0);
+                        fileFromClient.seekp(((int)currentPacketIndex - 1) * 128);
                         fileFromClient.write(decodedMSG, 128);
-                    
-                    fileFromClient.close();
+                        fileFromClient.close();
+                    }
 
                     std::string timestamp = getCurrentTimestamp();
                     outputFile << (int)currentPacketIndex << "," << 1 << "," << timestamp << "," << numberOfErrors << std::endl;
