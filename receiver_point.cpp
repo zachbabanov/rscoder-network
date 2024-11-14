@@ -46,18 +46,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    /// This method gets only local addresses, so i've had to use workaround lower
-    /*
-    char hostname[1024]; ///< This machine hostname (either global DNS, or local name)
-    gethostname(hostname, sizeof(hostname));
-    struct hostent *he = gethostbyname(hostname); ///< Get all ip associated with hostname
-    if (he == NULL)
-    {
-        perror("gethostbyname");
-        exit(EXIT_FAILURE);
-    }
-    */
-
     FILE *commandFile; ///< Our bash command
     commandFile = popen("hostname -I | awk '{print $1}'", "r");
 
@@ -166,7 +154,7 @@ int main(int argc, char *argv[])
                         if (fileFromClient.is_open())
                         {
                             fileFromClient.seekp(0);
-                            fileFromClient.seekp((currentMSG + (int)currentPacketIndex - 1) * 128);
+                            fileFromClient.seekp((currentMSG + (((int)currentPacketIndex - 1) * bandwidth)) * 128);
                             fileFromClient.write(decodedMSG, 128);
                             fileFromClient.close();
                         }
@@ -222,7 +210,7 @@ int main(int argc, char *argv[])
                         if (fileFromClient.is_open())
                         {
                             fileFromClient.seekp(0);
-                            fileFromClient.seekp((currentMSG + (int)currentPacketIndex - 1) * 128);
+                            fileFromClient.seekp((currentMSG + (((int)currentPacketIndex - 1) * bandwidth)) * 128);
                             fileFromClient.write(decodedMSG, 128);
                             fileFromClient.close();
                         }
