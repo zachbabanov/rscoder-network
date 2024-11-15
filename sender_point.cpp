@@ -231,62 +231,469 @@ int main(int argc, char *argv[])
 
                     amountOfFilesSent++;
 
-                    std::string loopAmount;
-                    if (hasFlag(command.args, "-l",loopAmount))
+                   if (hasFlag(command.args, "-n"))
                     {
-                        int integerLoopAmount;
-                        try
+                        std::string loopAmount;
+                        if (hasFlag(command.args, "-l",loopAmount))
                         {
-                            integerLoopAmount = stoi(loopAmount);
-                            if (integerLoopAmount > 100000 || integerLoopAmount < 1)
+                            int integerLoopAmount;
+                            try
+                            {
+                                integerLoopAmount = stoi(loopAmount);
+                                if (integerLoopAmount > 100000 || integerLoopAmount < 1)
+                                {
+                                    std::cout << "Incorrect amount of cycles provided" << std::endl;
+                                    continue;
+                                }
+                            }
+                            catch (std::invalid_argument const&)
                             {
                                 std::cout << "Incorrect amount of cycles provided" << std::endl;
                                 continue;
                             }
+
+                            std::cout << "Sending file: " << filename << " with bandwidth: " << bandwidth << std::endl;
+
+                            size_t pos = filename.rfind('/');
+                            std::string nameOfFile =  filename.substr(pos + 1);
+
+                            udpPacket = new char[nameOfFile.size() + 2];
+                            udpPacket = composePacket(udpPacket, FILE_NAME, amountOfFilesSent, (char*)nameOfFile.c_str());
+
+                            if (sendto(sockfd, (const char *)udpPacket,
+                                       strlen(udpPacket), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                            {
+                                perror("sendto failed");
+                                exit(EXIT_FAILURE);
+                            }
+
+                            delete[] udpPacket;
+
+                            std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
+
+                            inputFile.seekg(0, inputFile.end);
+                            std::streampos inputFileSize = inputFile.tellg();
+                            inputFile.seekg(0, inputFile.beg);
+
+                            int numberOfChunks = inputFileSize / 255 + 1;
+                            char* inputFileBytes = new char[numberOfChunks * 255];
+                            memset(inputFileBytes, 0, numberOfChunks * 255);
+
+                            inputFile.read(inputFileBytes, inputFileSize);
+                            inputFileBytes[inputFileSize] = '\0';
+                            inputFile.close();
+
+                            char currentMSG[255];
+
+                            /// BEGIN OF FILE TRANFER
+                            for (int currentCycle = 0; currentCycle < integerLoopAmount; currentCycle++)
+                            {
+                                if (integerBandwidth > 1)
+                                {
+                                    char encodedSequence[255 * integerBandwidth];
+                                    memset(&encodedSequence[0], 0, 255 * integerBandwidth);
+
+                                    for (int currentChunk = 0; currentChunk < numberOfChunks; currentChunk += integerBandwidth)
+                                    {
+                                        int numberOfParts = numberOfChunks / integerBandwidth;
+                                        int lastPartBandwidth = numberOfChunks % integerBandwidth;
+
+                                        if (currentChunk == numberOfParts * integerBandwidth && lastPartBandwidth != 0)
+                                            integerBandwidth = lastPartBandwidth;
+
+                                        for (int currentPart = 0; currentPart < integerBandwidth; currentPart++)
+                                        {
+                                            memcpy(currentMSG, inputFileBytes + currentChunk * 255 + currentPart * 255, 255);
+                                            memcpy(encodedSequence + 255 * currentPart, currentMSG, 255);
+                                            memset(&currentMSG[0], 0, 255);
+                                        }
+
+                                        udpPacket = new char[255 * integerBandwidth + 5];
+                                        char16_t currentIndex = currentChunk / integerBandwidth + 1;
+                                        udpPacket = composePacket(udpPacket, NO_CODE, amountOfFilesSent, currentIndex,
+                                                                  integerBandwidth, encodedSequence);
+
+                                        memset(encodedSequence, 0, 255 * integerBandwidth);
+
+                                        if (sendto(sockfd,
+                                                   (const char *)udpPacket, (255 * integerBandwidth + 5) * sizeof(char),
+                                                   0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                                        {
+                                            perror("sendto failed");
+                                            exit(EXIT_FAILURE);
+                                        }
+
+                                        std::string timestamp = getCurrentTimestamp();
+                                        sendOutput << amountOfFilesSent << "," << currentIndex << "," << integerBandwidth << "," << timestamp << std::endl;
+
+                                        delete[] udpPacket;
+                                    }
+                                }
+                                else
+                                {
+                                    udpPacket = new char[255 + 5];
+                                    memset(&udpPacket[0], 0, 255 + 5);
+                                    for (int currentChunk = 0; currentChunk < numberOfChunks; currentChunk++)
+                                    {
+                                        int numberOfParts = numberOfChunks / integerBandwidth;
+                                        int lastPartBandwidth = numberOfChunks % integerBandwidth;
+
+                                        if (currentChunk == numberOfParts * integerBandwidth && lastPartBandwidth != 0)
+                                            integerBandwidth = lastPartBandwidth;
+
+                                        memcpy(currentMSG, inputFileBytes + currentChunk * 255, 255);
+                                        udpPacket = composePacket(udpPacket, NO_CODE, amountOfFilesSent, currentChunk + 1, 1, currentMSG);
+                                        memset(currentMSG, 0, 255);
+
+                                        if (sendto(sockfd,
+                                                   (const char *)udpPacket, (255 + 5) * sizeof(char),
+                                                   0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                                        {
+                                            perror("sendto failed");
+                                            exit(EXIT_FAILURE);
+                                        }
+
+                                        std::string timestamp = getCurrentTimestamp();
+                                        sendOutput << amountOfFilesSent << "," << currentChunk + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
+
+                                        memset(&udpPacket[0], 0, 255 + 5);
+                                    }
+                                }
+                            }
+
+                            /// END OF FILE TRANSFER
+
+                            udpPacket = new char[sizeof(EOT)];
+                            udpPacket = composePacket(udpPacket, EOT);
+                            if (sendto(sockfd,
+                                       (const char *)udpPacket, strlen(udpPacket),
+                                       0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                            {
+                                perror("sendto failed");
+                                exit(EXIT_FAILURE);
+                            }
+
+                            delete[] udpPacket;
+                            inputFileStream.close();
                         }
-                        catch (std::invalid_argument const&)
+                        else
                         {
-                            std::cout << "Incorrect amount of cycles provided" << std::endl;
-                            continue;
+                            std::cout << "Sending file: " << filename << " with bandwidth: " << bandwidth << std::endl;
+
+                            size_t pos = filename.rfind('/');
+                            std::string nameOfFile =  filename.substr(pos + 1);
+
+                            udpPacket = new char[nameOfFile.size() + 2];
+                            udpPacket = composePacket(udpPacket, FILE_NAME, amountOfFilesSent, (char*)nameOfFile.c_str());
+
+                            if (sendto(sockfd, (const char *)udpPacket,
+                                       strlen(udpPacket), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                            {
+                                perror("sendto failed");
+                                exit(EXIT_FAILURE);
+                            }
+
+                            delete[] udpPacket;
+
+                            std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
+
+                            /// BEGIN OF FILE TRANFER
+
+                            inputFile.seekg(0, inputFile.end);
+                            std::streampos inputFileSize = inputFile.tellg();
+                            inputFile.seekg(0, inputFile.beg);
+
+                            int numberOfChunks = inputFileSize / 255 + 1;
+                            char* inputFileBytes = new char[numberOfChunks * 255];
+                            memset(inputFileBytes, 0, numberOfChunks * 255);
+
+                            inputFile.read(inputFileBytes, inputFileSize);
+                            inputFileBytes[inputFileSize] = '\0';
+                            inputFile.close();
+
+                            char currentMSG[255];
+
+                            if (integerBandwidth > 1)
+                            {
+                                char encodedSequence[255 * integerBandwidth];
+                                memset(&encodedSequence[0], 0, 255 * integerBandwidth);
+
+                                for (int currentChunk = 0; currentChunk < numberOfChunks; currentChunk += integerBandwidth)
+                                {
+                                    int numberOfParts = numberOfChunks / integerBandwidth;
+                                    int lastPartBandwidth = numberOfChunks % integerBandwidth;
+
+                                    if (currentChunk == numberOfParts * integerBandwidth && lastPartBandwidth != 0)
+                                        integerBandwidth = lastPartBandwidth;
+
+                                    for (int currentPart = 0; currentPart < integerBandwidth; currentPart++)
+                                    {
+                                        memcpy(currentMSG, inputFileBytes + currentChunk * 255 + currentPart * 255, 255);
+                                        memcpy(encodedSequence + 255 * currentPart, currentMSG, 255);
+                                        memset(&currentMSG[0], 0, 128);
+                                    }
+
+                                    udpPacket = new char[255 * integerBandwidth + 5];
+                                    char16_t currentIndex = currentChunk / integerBandwidth + 1;
+                                    udpPacket = composePacket(udpPacket, NO_CODE, amountOfFilesSent, currentIndex,
+                                                              integerBandwidth, encodedSequence);
+
+                                    memset(encodedSequence, 0, 255 * integerBandwidth);
+
+                                    if (sendto(sockfd,
+                                               (const char *)udpPacket, (255 * integerBandwidth + 5) * sizeof(char),
+                                               0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                                    {
+                                        perror("sendto failed");
+                                        exit(EXIT_FAILURE);
+                                    }
+
+                                    std::string timestamp = getCurrentTimestamp();
+                                    sendOutput << amountOfFilesSent << "," << currentIndex << "," << integerBandwidth << "," << timestamp << std::endl;
+
+                                    delete[] udpPacket;
+                                }
+                            }
+                            else
+                            {
+                                udpPacket = new char[255 + 5];
+                                memset(&udpPacket[0], 0, 255 + 5);
+                                for (int currentChunk = 0; currentChunk < numberOfChunks; currentChunk++)
+                                {
+                                    int numberOfParts = numberOfChunks / integerBandwidth;
+                                    int lastPartBandwidth = numberOfChunks % integerBandwidth;
+
+                                    if (currentChunk == numberOfParts * integerBandwidth && lastPartBandwidth != 0)
+                                        integerBandwidth = lastPartBandwidth;
+
+                                    memcpy(currentMSG, inputFileBytes + currentChunk * 255, 255);
+
+                                    udpPacket = composePacket(udpPacket, NO_CODE, amountOfFilesSent, currentChunk + 1, 1, currentMSG);
+                                    memset(currentMSG, 0, 255);
+
+                                    if (sendto(sockfd,
+                                               (const char *)udpPacket, (255 + 5) * sizeof(char),
+                                               0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                                    {
+                                        perror("sendto failed");
+                                        exit(EXIT_FAILURE);
+                                    }
+
+                                    std::string timestamp = getCurrentTimestamp();
+                                    sendOutput << amountOfFilesSent << "," << currentChunk + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
+
+                                    memset(&udpPacket[0], 0, 255 + 5);
+                                }
+                            }
+
+                            /// END OF FILE TRANSFER
+
+                            udpPacket = new char[sizeof(EOT)];
+                            udpPacket = composePacket(udpPacket, EOT);
+                            if (sendto(sockfd,
+                                       (const char *)udpPacket, strlen(udpPacket),
+                                       0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                            {
+                                perror("sendto failed");
+                                exit(EXIT_FAILURE);
+                            }
+
+                            delete[] udpPacket;
+                            inputFileStream.close();
                         }
-
-                        std::cout << "Sending file: " << filename << " with bandwidth: " << bandwidth << std::endl;
-
-                        size_t pos = filename.rfind('/');
-                        std::string nameOfFile =  filename.substr(pos + 1);
-
-                        udpPacket = new char[nameOfFile.size() + 2];
-                        udpPacket = composePacket(udpPacket, FILE_NAME, amountOfFilesSent, (char*)nameOfFile.c_str());
-
-                        if (sendto(sockfd, (const char *)udpPacket,
-                                strlen(udpPacket), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                    }
+                    else
+                    {
+                        std::string loopAmount;
+                        if (hasFlag(command.args, "-l",loopAmount))
                         {
-                            perror("sendto failed");
-                            exit(EXIT_FAILURE);
+                            int integerLoopAmount;
+                            try
+                            {
+                                integerLoopAmount = stoi(loopAmount);
+                                if (integerLoopAmount > 100000 || integerLoopAmount < 1)
+                                {
+                                    std::cout << "Incorrect amount of cycles provided" << std::endl;
+                                    continue;
+                                }
+                            }
+                            catch (std::invalid_argument const&)
+                            {
+                                std::cout << "Incorrect amount of cycles provided" << std::endl;
+                                continue;
+                            }
+
+                            std::cout << "Sending file: " << filename << " with bandwidth: " << bandwidth << std::endl;
+
+                            size_t pos = filename.rfind('/');
+                            std::string nameOfFile =  filename.substr(pos + 1);
+
+                            udpPacket = new char[nameOfFile.size() + 2];
+                            udpPacket = composePacket(udpPacket, FILE_NAME, amountOfFilesSent, (char*)nameOfFile.c_str());
+
+                            if (sendto(sockfd, (const char *)udpPacket,
+                                       strlen(udpPacket), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                            {
+                                perror("sendto failed");
+                                exit(EXIT_FAILURE);
+                            }
+
+                            delete[] udpPacket;
+
+                            std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
+
+                            inputFile.seekg(0, inputFile.end);
+                            std::streampos inputFileSize = inputFile.tellg();
+                            inputFile.seekg(0, inputFile.beg);
+
+                            int numberOfChunks = inputFileSize / 128 + 1;
+                            char* inputFileBytes = new char[numberOfChunks * 128];
+                            memset(inputFileBytes, 0, numberOfChunks * 128);
+
+                            inputFile.read(inputFileBytes, inputFileSize);
+                            inputFileBytes[inputFileSize] = '\0';
+                            inputFile.close();
+
+                            char currentMSG[128];
+                            char encodedMSG[255];
+
+                            /// BEGIN OF FILE TRANFER
+                            for (int currentCycle = 0; currentCycle < integerLoopAmount; currentCycle++)
+                            {
+                                if (integerBandwidth > 1)
+                                {
+                                    char encodedSequence[255 * integerBandwidth];
+                                    memset(&encodedSequence[0], 0, 255 * integerBandwidth);
+
+                                    for (int currentChunk = 0; currentChunk < numberOfChunks; currentChunk += integerBandwidth)
+                                    {
+                                        int numberOfParts = numberOfChunks / integerBandwidth;
+                                        int lastPartBandwidth = numberOfChunks % integerBandwidth;
+
+                                        if (currentChunk == numberOfParts * integerBandwidth && lastPartBandwidth != 0)
+                                            integerBandwidth = lastPartBandwidth;
+
+                                        for (int currentPart = 0; currentPart < integerBandwidth; currentPart++)
+                                        {
+                                            memcpy(currentMSG, inputFileBytes + currentChunk * 128 + currentPart * 128, 128);
+                                            coder.Encode(currentMSG, encodedMSG);
+                                            memcpy(encodedSequence + 255 * currentPart, encodedMSG, 255);
+
+                                            memset(&currentMSG[0], 0, 128);
+                                            memset(&encodedMSG[0], 0, 255);
+                                        }
+
+                                        udpPacket = new char[255 * integerBandwidth + 5];
+                                        char16_t currentIndex = currentChunk / integerBandwidth + 1;
+                                        udpPacket = composePacket(udpPacket, FILE, amountOfFilesSent, currentIndex,
+                                                                  integerBandwidth, encodedSequence);
+
+                                        memset(encodedSequence, 0, 255 * integerBandwidth);
+
+                                        if (sendto(sockfd,
+                                                   (const char *)udpPacket, (255 * integerBandwidth + 5) * sizeof(char),
+                                                   0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                                        {
+                                            perror("sendto failed");
+                                            exit(EXIT_FAILURE);
+                                        }
+
+                                        std::string timestamp = getCurrentTimestamp();
+                                        sendOutput << amountOfFilesSent << "," << currentIndex << "," << integerBandwidth << "," << timestamp << std::endl;
+
+                                        delete[] udpPacket;
+                                    }
+                                }
+                                else
+                                {
+                                    udpPacket = new char[255 + 5];
+                                    memset(&udpPacket[0], 0, 255 + 5);
+                                    for (int currentChunk = 0; currentChunk < numberOfChunks; currentChunk++)
+                                    {
+                                        int numberOfParts = numberOfChunks / integerBandwidth;
+                                        int lastPartBandwidth = numberOfChunks % integerBandwidth;
+
+                                        if (currentChunk == numberOfParts * integerBandwidth && lastPartBandwidth != 0)
+                                            integerBandwidth = lastPartBandwidth;
+
+                                        memcpy(currentMSG, inputFileBytes + currentChunk * 128, 128);
+                                        coder.Encode(currentMSG, encodedMSG);
+                                        memset(&currentMSG[0], 0, 128);
+
+
+                                        udpPacket = composePacket(udpPacket, FILE, amountOfFilesSent, currentChunk + 1, 1, encodedMSG);
+
+                                        memset(encodedMSG, 0, 255);
+
+                                        if (sendto(sockfd,
+                                                   (const char *)udpPacket, (255 + 5) * sizeof(char),
+                                                   0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                                        {
+                                            perror("sendto failed");
+                                            exit(EXIT_FAILURE);
+                                        }
+
+                                        std::string timestamp = getCurrentTimestamp();
+                                        sendOutput << amountOfFilesSent << "," << currentChunk + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
+
+                                        memset(&udpPacket[0], 0, 255 + 5);
+                                    }
+                                }
+                            }
+
+                            /// END OF FILE TRANSFER
+
+                            udpPacket = new char[sizeof(EOT)];
+                            udpPacket = composePacket(udpPacket, EOT);
+                            if (sendto(sockfd,
+                                       (const char *)udpPacket, strlen(udpPacket),
+                                       0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                            {
+                                perror("sendto failed");
+                                exit(EXIT_FAILURE);
+                            }
+
+                            delete[] udpPacket;
+                            inputFileStream.close();
                         }
-
-                        delete[] udpPacket;
-
-                        std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
-
-                        inputFile.seekg(0, inputFile.end);
-                        std::streampos inputFileSize = inputFile.tellg();
-                        inputFile.seekg(0, inputFile.beg);
-
-                        int numberOfChunks = inputFileSize / 128 + 1;
-                        char* inputFileBytes = new char[numberOfChunks * 128];
-                        memset(inputFileBytes, 0, numberOfChunks * 128);
-
-                        inputFile.read(inputFileBytes, inputFileSize);
-                        inputFileBytes[inputFileSize] = '\0';
-                        inputFile.close();
-
-                        char currentMSG[128];
-                        char encodedMSG[255];
-
-                        /// BEGIN OF FILE TRANFER
-                        for (int currentCycle = 0; currentCycle < integerLoopAmount; currentCycle++)
+                        else
                         {
+                            std::cout << "Sending file: " << filename << " with bandwidth: " << bandwidth << std::endl;
+
+                            size_t pos = filename.rfind('/');
+                            std::string nameOfFile =  filename.substr(pos + 1);
+
+                            udpPacket = new char[nameOfFile.size() + 2];
+                            udpPacket = composePacket(udpPacket, FILE_NAME, amountOfFilesSent, (char*)nameOfFile.c_str());
+
+                            if (sendto(sockfd, (const char *)udpPacket,
+                                       strlen(udpPacket), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                            {
+                                perror("sendto failed");
+                                exit(EXIT_FAILURE);
+                            }
+
+                            delete[] udpPacket;
+
+                            std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
+
+                            /// BEGIN OF FILE TRANFER
+
+                            inputFile.seekg(0, inputFile.end);
+                            std::streampos inputFileSize = inputFile.tellg();
+                            inputFile.seekg(0, inputFile.beg);
+
+                            int numberOfChunks = inputFileSize / 128 + 1;
+                            char* inputFileBytes = new char[numberOfChunks * 128];
+                            memset(inputFileBytes, 0, numberOfChunks * 128);
+
+                            inputFile.read(inputFileBytes, inputFileSize);
+                            inputFileBytes[inputFileSize] = '\0';
+                            inputFile.close();
+
+                            char currentMSG[128];
+                            char encodedMSG[255];
+
                             if (integerBandwidth > 1)
                             {
                                 char encodedSequence[255 * integerBandwidth];
@@ -313,13 +720,13 @@ int main(int argc, char *argv[])
                                     udpPacket = new char[255 * integerBandwidth + 5];
                                     char16_t currentIndex = currentChunk / integerBandwidth + 1;
                                     udpPacket = composePacket(udpPacket, FILE, amountOfFilesSent, currentIndex,
-                                            integerBandwidth, encodedSequence);
+                                                              integerBandwidth, encodedSequence);
 
                                     memset(encodedSequence, 0, 255 * integerBandwidth);
 
                                     if (sendto(sockfd,
-                                            (const char *)udpPacket, (255 * integerBandwidth + 5) * sizeof(char),
-                                            0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                                               (const char *)udpPacket, (255 * integerBandwidth + 5) * sizeof(char),
+                                               0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
                                     {
                                         perror("sendto failed");
                                         exit(EXIT_FAILURE);
@@ -353,8 +760,8 @@ int main(int argc, char *argv[])
                                     memset(encodedMSG, 0, 255);
 
                                     if (sendto(sockfd,
-                                            (const char *)udpPacket, (255 + 5) * sizeof(char),
-                                            0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+                                               (const char *)udpPacket, (255 + 5) * sizeof(char),
+                                               0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
                                     {
                                         perror("sendto failed");
                                         exit(EXIT_FAILURE);
@@ -366,155 +773,22 @@ int main(int argc, char *argv[])
                                     memset(&udpPacket[0], 0, 255 + 5);
                                 }
                             }
-                        }
 
-                        /// END OF FILE TRANSFER
+                            /// END OF FILE TRANSFER
 
-                        udpPacket = new char[sizeof(EOT)];
-                        udpPacket = composePacket(udpPacket, EOT);
-                        if (sendto(sockfd,
-                                (const char *)udpPacket, strlen(udpPacket),
-                                0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
-                        {
-                            perror("sendto failed");
-                            exit(EXIT_FAILURE);
-                        }
-
-                        delete[] udpPacket;
-                        inputFileStream.close();
-                    }
-                    else
-                    {
-                        std::cout << "Sending file: " << filename << " with bandwidth: " << bandwidth << std::endl;
-
-                        size_t pos = filename.rfind('/');
-                        std::string nameOfFile =  filename.substr(pos + 1);
-
-                        udpPacket = new char[nameOfFile.size() + 2];
-                        udpPacket = composePacket(udpPacket, FILE_NAME, amountOfFilesSent, (char*)nameOfFile.c_str());
-
-                        if (sendto(sockfd, (const char *)udpPacket,
-                                strlen(udpPacket), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
-                        {
-                            perror("sendto failed");
-                            exit(EXIT_FAILURE);
-                        }
-
-                        delete[] udpPacket;
-
-                        std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
-
-                        /// BEGIN OF FILE TRANFER
-
-                        inputFile.seekg(0, inputFile.end);
-                        std::streampos inputFileSize = inputFile.tellg();
-                        inputFile.seekg(0, inputFile.beg);
-
-                        int numberOfChunks = inputFileSize / 128 + 1;
-                        char* inputFileBytes = new char[numberOfChunks * 128];
-                        memset(inputFileBytes, 0, numberOfChunks * 128);
-
-                        inputFile.read(inputFileBytes, inputFileSize);
-                        inputFileBytes[inputFileSize] = '\0';
-                        inputFile.close();
-
-                        char currentMSG[128];
-                        char encodedMSG[255];
-
-                        if (integerBandwidth > 1)
-                        {
-                            char encodedSequence[255 * integerBandwidth];
-                            memset(&encodedSequence[0], 0, 255 * integerBandwidth);
-
-                            for (int currentChunk = 0; currentChunk < numberOfChunks; currentChunk += integerBandwidth)
+                            udpPacket = new char[sizeof(EOT)];
+                            udpPacket = composePacket(udpPacket, EOT);
+                            if (sendto(sockfd,
+                                       (const char *)udpPacket, strlen(udpPacket),
+                                       0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
                             {
-                                int numberOfParts = numberOfChunks / integerBandwidth;
-                                int lastPartBandwidth = numberOfChunks % integerBandwidth;
-
-                                if (currentChunk == numberOfParts * integerBandwidth && lastPartBandwidth != 0)
-                                    integerBandwidth = lastPartBandwidth;
-
-                                for (int currentPart = 0; currentPart < integerBandwidth; currentPart++)
-                                {
-                                    memcpy(currentMSG, inputFileBytes + currentChunk * 128 + currentPart * 128, 128);
-                                    coder.Encode(currentMSG, encodedMSG);
-                                    memcpy(encodedSequence + 255 * currentPart, encodedMSG, 255);
-
-                                    memset(&currentMSG[0], 0, 128);
-                                    memset(&encodedMSG[0], 0, 255);
-                                }
-
-                                udpPacket = new char[255 * integerBandwidth + 5];
-                                char16_t currentIndex = currentChunk / integerBandwidth + 1;
-                                udpPacket = composePacket(udpPacket, FILE, amountOfFilesSent, currentIndex,
-                                        integerBandwidth, encodedSequence);
-
-                                memset(encodedSequence, 0, 255 * integerBandwidth);
-
-                                if (sendto(sockfd,
-                                        (const char *)udpPacket, (255 * integerBandwidth + 5) * sizeof(char),
-                                        0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
-                                {
-                                    perror("sendto failed");
-                                    exit(EXIT_FAILURE);
-                                }
-
-                                std::string timestamp = getCurrentTimestamp();
-                                sendOutput << amountOfFilesSent << "," << currentIndex << "," << integerBandwidth << "," << timestamp << std::endl;
-
-                                delete[] udpPacket;
+                                perror("sendto failed");
+                                exit(EXIT_FAILURE);
                             }
+
+                            delete[] udpPacket;
+                            inputFileStream.close();
                         }
-                        else
-                        {
-                            udpPacket = new char[255 + 5];
-                            memset(&udpPacket[0], 0, 255 + 5);
-                            for (int currentChunk = 0; currentChunk < numberOfChunks; currentChunk++)
-                            {
-                                int numberOfParts = numberOfChunks / integerBandwidth;
-                                int lastPartBandwidth = numberOfChunks % integerBandwidth;
-
-                                if (currentChunk == numberOfParts * integerBandwidth && lastPartBandwidth != 0)
-                                    integerBandwidth = lastPartBandwidth;
-
-                                memcpy(currentMSG, inputFileBytes + currentChunk * 128, 128);
-                                coder.Encode(currentMSG, encodedMSG);
-                                memset(&currentMSG[0], 0, 128);
-
-
-                                udpPacket = composePacket(udpPacket, FILE, amountOfFilesSent, currentChunk + 1, 1, encodedMSG);
-
-                                memset(encodedMSG, 0, 255);
-
-                                if (sendto(sockfd,
-                                        (const char *)udpPacket, (255 + 5) * sizeof(char),
-                                        0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
-                                {
-                                    perror("sendto failed");
-                                    exit(EXIT_FAILURE);
-                                }
-
-                                std::string timestamp = getCurrentTimestamp();
-                                sendOutput << amountOfFilesSent << "," << currentChunk + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
-
-                                memset(&udpPacket[0], 0, 255 + 5);
-                            }
-                        }
-
-                        /// END OF FILE TRANSFER
-
-                        udpPacket = new char[sizeof(EOT)];
-                        udpPacket = composePacket(udpPacket, EOT);
-                        if (sendto(sockfd,
-                                (const char *)udpPacket, strlen(udpPacket),
-                                0, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
-                        {
-                            perror("sendto failed");
-                            exit(EXIT_FAILURE);
-                        }
-
-                        delete[] udpPacket;
-                        inputFileStream.close();
                     }
                 }
                 else
