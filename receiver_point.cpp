@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         else if (buffer[0] == 0x02)
         {
 
-            if (currentFileIndex == buffer[1])
+            if (currentFileIndex == buffer[1] && clientFileName != nullptr)
             {
                 fileFromClient.open(clientFileName);
             }
@@ -148,8 +148,8 @@ int main(int argc, char *argv[])
                         decoder.Decode(MSG, decodedMSG);
                         numberOfErrors += decoder.polynoms[3].length;
 
-
-                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
+                        if (clientFileName != nullptr)
+                            fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
                         if (fileFromClient.is_open())
                         {
@@ -173,8 +173,9 @@ int main(int argc, char *argv[])
 
                     decoder.Decode(MSG, decodedMSG);
                     int numberOfErrors = decoder.polynoms[3].length;
-
-                    fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
+                    
+                    if (clientFileName != nullptr)
+                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
                     if (fileFromClient.is_open())
                     {
@@ -205,7 +206,8 @@ int main(int argc, char *argv[])
                         decoder.Decode(MSG, decodedMSG);
                         numberOfErrors += decoder.polynoms[3].length;
 
-                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
+                        if (clientFileName != nullptr)
+                            fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
                         if (fileFromClient.is_open())
                         {
@@ -230,7 +232,8 @@ int main(int argc, char *argv[])
                     decoder.Decode(MSG, decodedMSG);
                     int numberOfErrors = decoder.polynoms[3].length;
 
-                    fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
+                    if (clientFileName != nullptr)
+                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
                     if (fileFromClient.is_open())
                     {
@@ -285,7 +288,8 @@ int main(int argc, char *argv[])
                         int currentOffset = currentMSG * 255 + 5;
                         memcpy(&MSG[0], &buffer[currentOffset], 255);
 
-                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
+                        if (clientFileName != nullptr)
+                            fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
 
                         if (fileFromClient.is_open())
                         {
@@ -306,7 +310,8 @@ int main(int argc, char *argv[])
                     char MSG[255];
                     memcpy(&MSG[0], &buffer[5], 255);
 
-                    fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
+                    if (clientFileName != nullptr)
+                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
 
                     if (fileFromClient.is_open())
                     {
@@ -333,7 +338,8 @@ int main(int argc, char *argv[])
                         int currentOffset = currentMSG * 255 + 5;
                         memcpy(&MSG[0], &buffer[currentOffset], 255);
 
-                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
+                        if (clientFileName != nullptr)
+                            fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
 
                         if (fileFromClient.is_open())
                         {
@@ -354,7 +360,8 @@ int main(int argc, char *argv[])
                     char MSG[255];
                     memcpy(&MSG[0], &buffer[5], 255);
 
-                    fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
+                    if (clientFileName != nullptr)
+                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
 
                     if (fileFromClient.is_open())
                     {
