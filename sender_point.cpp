@@ -197,7 +197,6 @@ int main(int argc, char *argv[])
         else if (command.name == "send")
         {
             std::string currentTime = getCurrentTimestamp();
-            std::ofstream sendOutput("./csv/" + currentTime + "_sender_send_output.csv", std::ios::app);
 
             std::string filename;
             if (hasFlag(command.args, "-f", filename))
@@ -233,6 +232,8 @@ int main(int argc, char *argv[])
 
                     if (hasFlag(command.args, "-n"))
                     {
+                        std::ofstream sendOutput("./csv/" + currentTime + "_sender_send_no_code_output.csv", std::ios::app);
+                        
                         std::string loopAmount;
                         if (hasFlag(command.args, "-l",loopAmount))
                         {
@@ -504,6 +505,8 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
+                        std::ofstream sendOutput("./csv/" + currentTime + "_sender_send_encoded_output.csv", std::ios::app);
+                        
                         std::string loopAmount;
                         if (hasFlag(command.args, "-l",loopAmount))
                         {
