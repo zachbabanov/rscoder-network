@@ -13,6 +13,7 @@
 #define FILE 0x03
 #define EOT 0x04
 #define BENCH 0x05
+#define NO_CODE 0x06
 
 /*
  *   The structure of the header is assumed to be as follows, both at the receiver_point and at the sender_point:
