@@ -245,6 +245,130 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        else if (buffer[0] == 0x06)
+        {
+            std::cout << "Received file packet from " << ntohs(cliaddr.sin_port) << std::endl;
+
+            if (outputFile.is_open())
+            {
+                long pos = outputFile.tellp();
+                if (pos == 0)
+                {
+                    currentTime = getCurrentTimestamp();
+                    outputFile.open("../csv/" + currentTime + "_receiver_send_no_code_output.csv", std::ios::app);
+                }
+            }
+            else
+            {
+                currentTime = getCurrentTimestamp();
+                outputFile.open("../csv/" + currentTime + "_receiver_send_no_code_output.csv", std::ios::app);
+            }
+
+            char16_t currentPacketIndex;
+            if (buffer[2] == '\377')
+                currentPacketIndex = (unsigned char)buffer[3];
+            else
+                currentPacketIndex = static_cast<char16_t>((unsigned char)(buffer[2]) << 8 | (unsigned char)buffer[3]);
+
+            // Check if file is the same
+
+            if (buffer[1] == currentFileIndex)
+            {
+                if (buffer[4] > 1)
+                {
+                    int bandwidth = buffer[4];
+                    char MSG[255];
+
+                    int numberOfErrors = 0;
+                    for (int currentMSG = 0; currentMSG < bandwidth; currentMSG++)
+                    {
+                        int currentOffset = currentMSG * 255 + 5;
+                        memcpy(&MSG[0], &buffer[currentOffset], 255);
+
+                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
+
+                        if (fileFromClient.is_open())
+                        {
+                            fileFromClient.seekp(0);
+                            fileFromClient.seekp((currentMSG + (((int)currentPacketIndex - 1) * bandwidth)) * 255);
+                            fileFromClient.write(MSG, 255);
+                            fileFromClient.close();
+                        }
+
+                        memset(&MSG[0], 0, 255);
+                    }
+
+                    std::string timestamp = getCurrentTimestamp();
+                    outputFile << (int)currentPacketIndex << "," << int(bandwidth) << "," << timestamp << "," << numberOfErrors << std::endl;
+                }
+                else
+                {
+                    char MSG[255];
+                    memcpy(&MSG[0], &buffer[5], 255);
+
+                    fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
+
+                    if (fileFromClient.is_open())
+                    {
+                        fileFromClient.seekp(0);
+                        fileFromClient.seekp(((int)currentPacketIndex - 1) * 255);
+                        fileFromClient.write(MSG, 255);
+                        fileFromClient.close();
+                    }
+
+                    std::string timestamp = getCurrentTimestamp();
+                    outputFile << (int)currentPacketIndex << "," << 1 << "," << timestamp << std::endl;
+                }
+            }
+            else
+            {
+                if (buffer[4] > 1)
+                {
+                    int bandwidth = buffer[4];
+                    char MSG[255];
+
+                    int numberOfErrors = 0;
+                    for (int currentMSG = 0; currentMSG < bandwidth; currentMSG++)
+                    {
+                        int currentOffset = currentMSG * 255 + 5;
+                        memcpy(&MSG[0], &buffer[currentOffset], 255);
+
+                        fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
+
+                        if (fileFromClient.is_open())
+                        {
+                            fileFromClient.seekp(0);
+                            fileFromClient.seekp((currentMSG + (((int)currentPacketIndex - 1) * bandwidth)) * 255);
+                            fileFromClient.write(MSG, 255);
+                            fileFromClient.close();
+                        }
+
+                        memset(&MSG[0], 0, 255);
+                    }
+
+                    std::string timestamp = getCurrentTimestamp();
+                    outputFile << (int)currentPacketIndex << "," << int(bandwidth) << "," << timestamp << "," << numberOfErrors << std::endl;
+                }
+                else
+                {
+                    char MSG[255];
+                    memcpy(&MSG[0], &buffer[5], 255);
+
+                    fileFromClient.open(clientFileName, std::ios::in | std::ios::out | std::ios::binary);
+
+                    if (fileFromClient.is_open())
+                    {
+                        fileFromClient.seekp(0);
+                        fileFromClient.seekp(((int)currentPacketIndex - 1) * 255);
+                        fileFromClient.write(MSG, 255);
+                        fileFromClient.close();
+                    }
+
+                    std::string timestamp = getCurrentTimestamp();
+                    outputFile << (int)currentPacketIndex << "," << 1 << "," << timestamp << std::endl;
+                }
+            }
+        }
         else if (buffer[0] == 0x04)
         {
             if (fileFromClient.is_open())
