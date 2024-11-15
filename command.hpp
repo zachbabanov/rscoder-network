@@ -50,4 +50,20 @@ bool hasFlag(const std::vector<std::string> &args, const std::string &flag, std:
     return false;
 }
 
+/// Check are there exact flag at parsed <b>Command</b>
+/// \param args - All flag data from exact <b>Command</b>, i.e.: <b>command.args</b>
+/// \param flag - Flag to check presence
+/// \return <b>True</b> - If there are provided <b>flag</b> in provided <b>command</b>
+/// \return <b>False</b> - There not such a flag
+bool hasFlag(const std::vector<std::string> &args, const std::string &flag)
+{
+    for (std::size_t currentArg = 0; currentArg < args.size(); ++currentArg)
+    {
+        if (args[currentArg] == flag)
+            return true;
+    }
+
+    return false;
+}
+
 #endif //COMMAND_H
