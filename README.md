@@ -99,6 +99,12 @@ sender_point>send -f FILEPATH -b BANDWIDTH
 `.sh`, `bat`, `.svg` etc) can be transited properly
 `-b` flag is essential and must be followed by integer number in range `(1, 64)`<br>
 It represents number of data block stored in single package, i. e. with `-b 1` it will be only one `255 bytes` block
+`send` command also have two optional flags: `-l` to continuously transmit single file in a loop and `-n` to send file 
+without encoding<br>
+`-l` flag, if used, must be followed by integer number in range `(1, 100000)`<br>
+It represents a number of cycles single file will be transmitted in a loop<br>
+`-n` flag has no argument to be followed by must be used as it is. If flag used, all messages will be twice as big and 
+will be transmitted without encoding<br>
 
 * `quit` or `q` command to terminate program
 
