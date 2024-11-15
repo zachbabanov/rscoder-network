@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
 
                     amountOfFilesSent++;
 
-                   if (hasFlag(command.args, "-n"))
+                    if (hasFlag(command.args, "-n"))
                     {
                         std::string loopAmount;
                         if (hasFlag(command.args, "-l",loopAmount))
