@@ -114,13 +114,13 @@ int main(int argc, char *argv[])
                 if (pos == 0)
                 {
                     currentTime = getCurrentTimestamp();
-                    outputFile.open("./csv/" + currentTime + "_receiver_send_output.csv", std::ios::app);
+                    outputFile.open("./csv/" + currentTime + "_receiver_send_encoded_output.csv", std::ios::app);
                 }
             }
             else
             {
                 currentTime = getCurrentTimestamp();
-                outputFile.open("./csv/" + currentTime + "_receiver_send_output.csv", std::ios::app);
+                outputFile.open("./csv/" + currentTime + "_receiver_send_encoded_output.csv", std::ios::app);
             }
 
             char16_t currentPacketIndex;
