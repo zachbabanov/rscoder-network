@@ -126,7 +126,7 @@ and `TIMESTAMP_sender_send_no_code_output.csv` for sending without any. All file
 |  #  |                      Issue                   |          Solved          |                                                         Solution                                                         |
 |-----|----------------------------------------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------|
 |  1  |     Transmitting only text handled files     | <ul><li>- [x] </li></ul> |            Can transmit `.bmp` files with color palette set to Monochrome, 16 colors and 256 colors as it is             |
-|  2  |    Overflowing decoding with bandwidth > 1   | <ul><li>- [x] </li></ul> | Now allocating memory by position set<br>with packet number and cutting<br>last packet to actual amount of blocks needed |
+|  2  |    Overflowing decoding with bandwidth > 1   | <ul><li>- [x] </li></ul> |    Now allocating memory by position set with packet number and cutting last packet to actual amount of blocks needed    |
 |  3  | Packet loss even with good condition channel | <ul><li>- [x] </li></ul> |                     Put sleep timer by `3000` microsecond between each packet send to receiver point                     |
 |  4  |  Perfomance and delivery time with encoding  | <ul><li>- [ ] </li></ul> |                                                                                                                          |
 |  5  |              Video transission               | <ul><li>- [ ] </li></ul> |                                                                                                                          |
