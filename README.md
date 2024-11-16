@@ -130,3 +130,4 @@ and `TIMESTAMP_sender_send_no_code_output.csv` for sending without any. All file
 |  3  | Packet loss even with good condition channel | <ul><li>- [x] </li></ul> |                     Put sleep timer by `3000` microsecond between each packet send to receiver point                     |
 |  4  |  Perfomance and delivery time with encoding  | <ul><li>- [ ] </li></ul> |                                                                                                                          |
 |  5  |              Video transission               | <ul><li>- [ ] </li></ul> |                                                                                                                          |
+|  6  |  Non-systematic code and CDMA via Gold Code  | <ul><li>- [ ] </li></ul> |                                                                                                                          |
