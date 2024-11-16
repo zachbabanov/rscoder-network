@@ -91,7 +91,7 @@ sender_point>bench -b BANDWIDTH (optional)-n AMOUNT
 
 * `send` command to transmit actual file to connected Receiver Point
 ```shell script
-sender_point>send -f FILEPATH -b BANDWIDTH
+sender_point>send -f FILEPATH -b BANDWIDTH (optional)-l LOOP_AMOUNT (optional)-n
 ```
 
 `send` command has two essential flags: `-b` to specify packet bandwidth and `-f` to provide a file path to sending file<br>
