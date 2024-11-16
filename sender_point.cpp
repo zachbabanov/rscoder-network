@@ -140,6 +140,7 @@ int main(int argc, char *argv[])
                         benchOutput << currentPacket + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
 
                         delete[] benchPacket;
+                        usleep(3000);
                     }
 
                     char* eotPacket = new char[1];
@@ -174,6 +175,7 @@ int main(int argc, char *argv[])
                         benchOutput << currentPacket + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
 
                         delete[] benchPacket;
+                        usleep(3000);
                     }
 
                     char* eotPacket = new char[1];
@@ -187,6 +189,7 @@ int main(int argc, char *argv[])
                     }
 
                     delete[] eotPacket;
+                    usleep(3000);
                 }
             }
             else
@@ -269,6 +272,7 @@ int main(int argc, char *argv[])
                             }
 
                             delete[] udpPacket;
+                            usleep(3000);
 
                             std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
 
@@ -328,6 +332,7 @@ int main(int argc, char *argv[])
                                         sendOutput << amountOfFilesSent << "," << currentIndex << "," << integerBandwidth << "," << timestamp << std::endl;
 
                                         delete[] udpPacket;
+                                        usleep(3000);
                                     }
                                 }
                                 else
@@ -358,6 +363,7 @@ int main(int argc, char *argv[])
                                         sendOutput << amountOfFilesSent << "," << currentChunk + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
 
                                         memset(&udpPacket[0], 0, 255 + 5);
+                                        usleep(3000);
                                     }
                                 }
                             }
@@ -373,6 +379,7 @@ int main(int argc, char *argv[])
                                 perror("sendto failed");
                                 exit(EXIT_FAILURE);
                             }
+                            usleep(3000);
 
                             delete[] udpPacket;
                             inputFileStream.close();
@@ -395,6 +402,7 @@ int main(int argc, char *argv[])
                             }
 
                             delete[] udpPacket;
+                            usleep(3000);
 
                             std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
 
@@ -453,6 +461,7 @@ int main(int argc, char *argv[])
                                     sendOutput << amountOfFilesSent << "," << currentIndex << "," << integerBandwidth << "," << timestamp << std::endl;
 
                                     delete[] udpPacket;
+                                    usleep(3000);
                                 }
                             }
                             else
@@ -484,6 +493,7 @@ int main(int argc, char *argv[])
                                     sendOutput << amountOfFilesSent << "," << currentChunk + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
 
                                     memset(&udpPacket[0], 0, 255 + 5);
+                                    usleep(3000);
                                 }
                             }
 
@@ -498,6 +508,7 @@ int main(int argc, char *argv[])
                                 perror("sendto failed");
                                 exit(EXIT_FAILURE);
                             }
+                            usleep(3000);
 
                             delete[] udpPacket;
                             inputFileStream.close();
@@ -542,6 +553,7 @@ int main(int argc, char *argv[])
                             }
 
                             delete[] udpPacket;
+                            usleep(3000);
 
                             std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
 
@@ -605,6 +617,7 @@ int main(int argc, char *argv[])
                                         sendOutput << amountOfFilesSent << "," << currentIndex << "," << integerBandwidth << "," << timestamp << std::endl;
 
                                         delete[] udpPacket;
+                                        usleep(3000);
                                     }
                                 }
                                 else
@@ -640,6 +653,7 @@ int main(int argc, char *argv[])
                                         sendOutput << amountOfFilesSent << "," << currentChunk + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
 
                                         memset(&udpPacket[0], 0, 255 + 5);
+                                        usleep(3000);
                                     }
                                 }
                             }
@@ -655,6 +669,7 @@ int main(int argc, char *argv[])
                                 perror("sendto failed");
                                 exit(EXIT_FAILURE);
                             }
+                            usleep(3000);
 
                             delete[] udpPacket;
                             inputFileStream.close();
@@ -677,6 +692,7 @@ int main(int argc, char *argv[])
                             }
 
                             delete[] udpPacket;
+                            usleep(3000);
 
                             std::ifstream inputFile(filename, std::ios::in | std::ios::out | std::ios::binary);
 
@@ -739,6 +755,7 @@ int main(int argc, char *argv[])
                                     sendOutput << amountOfFilesSent << "," << currentIndex << "," << integerBandwidth << "," << timestamp << std::endl;
 
                                     delete[] udpPacket;
+                                    usleep(3000);
                                 }
                             }
                             else
@@ -774,6 +791,7 @@ int main(int argc, char *argv[])
                                     sendOutput << amountOfFilesSent << "," << currentChunk + 1 << "," << integerBandwidth << "," << timestamp << std::endl;
 
                                     memset(&udpPacket[0], 0, 255 + 5);
+                                    usleep(3000);
                                 }
                             }
 
@@ -788,6 +806,7 @@ int main(int argc, char *argv[])
                                 perror("sendto failed");
                                 exit(EXIT_FAILURE);
                             }
+                            usleep(3000);
 
                             delete[] udpPacket;
                             inputFileStream.close();
