@@ -96,7 +96,7 @@ sender_point>send -f FILEPATH -b BANDWIDTH
 
 `send` command has two essential flags: `-b` to specify packet bandwidth and `-f` to provide a file path to sending file<br>
 `-f` flag must be followed by valid file path. At the moment only files considered as text info (`.txt`, `.csv`, `.conf`,<br>
-`.sh`, `bat`, `.svg` etc) can be transited properly
+`.sh`, `bat`, `.bmp` (Monochrome, 16 colors, 256 colors), `.svg` etc) can be transited properly
 `-b` flag is essential and must be followed by integer number in range `(1, 64)`<br>
 It represents number of data block stored in single package, i. e. with `-b 1` it will be only one `255 bytes` block
 `send` command also have two optional flags: `-l` to continuously transmit single file in a loop and `-n` to send file 
